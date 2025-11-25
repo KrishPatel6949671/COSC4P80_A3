@@ -8,8 +8,6 @@ public class SOM {
     private int gridSize;
     private int inputDim;
     private double[][][] weights; // 3D array for weights [gridSize][gridSize][inputDim]
-    private double neighborhoodWidth;
-
 
     public SOM(int gridSize, int inputDim){
         this.gridSize = gridSize;
@@ -36,6 +34,16 @@ public class SOM {
             sum += Math.pow(input[i] - weight[i], 2);
         }
         return Math.sqrt(sum);
+    }
+
+    private double toroidalDistance(int x1, int y1, int x2, int y2){
+        int dx = Math.abs(x1 - x2);
+        int dy = Math.abs(y1 - y2);
+        //wrap around
+        dx = Math.min(dx, gridSize - dx);
+        dy = Math.min(dy, gridSize - dy);
+
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     private double radialBasisFunction(double distance, double r){
@@ -68,7 +76,41 @@ public class SOM {
     public void train(double[][] inputs, int epochs, double initialLearningRate){
         Random rand = new Random();
 
+        for (int t=0; t<epochs; t++){
+            //dynamic learning rate, based on current epoch
+            double learningRate = initialLearningRate * (1.0 - (double)t / epochs);
 
+            //calculate radius for this epoch, based on linear decay
+            double r = calculateRadius(t, epochs);
+
+            // Select a random input vector
+            double[] input = inputs[rand.nextInt(inputs.length)];
+
+            //find the closest vector to randomly selected input
+            int[] closestIndex = findClosestVector(input);
+
+            for(int i=0; i<gridSize; i++){
+                for(int j=0; j<gridSize; j++){
+                    //calculate distance to closest vector with wrap-around
+                    double distToClosest = toroidalDistance(closestIndex[0], closestIndex[1] , i, j);
+
+                    //calculate influence based on radial basis function
+                    double influence = radialBasisFunction(distToClosest, r);
+
+                    //update weights
+                    for(int k=0; k<inputDim; k++) {
+                        double delta = learningRate * influence * (input[k] - weights[i][j][k]);
+                        weights[i][j][k] += delta;
+                    }
+                }
+            }
+
+            if((t+1) % 1000 == 0){
+                System.out.println("Completed epoch: " + (t+1) + "/ " + epochs);
+                System.out.println("Learning Rate: " + learningRate + ", Radius: " + r);
+
+            }
+        }
     }
 
     public static void main(String[] args) {
