@@ -1,4 +1,5 @@
 import java.util.*;
+import java.io.*;
 
 /**
  * KRISH PATEL 6949671
@@ -94,7 +95,7 @@ public class SOM {
                     //calculate distance to closest vector with wrap-around
                     double distToClosest = toroidalDistance(closestIndex[0], closestIndex[1] , i, j);
 
-                    //calculate influence based on radial basis function
+                    //calculate influence based on radial basis function (neighbourhood function)
                     double influence = radialBasisFunction(distToClosest, r);
 
                     //update weights
@@ -111,6 +112,45 @@ public class SOM {
 
             }
         }
+    }
+
+    private double[][] generateHeatMap(double[][] inputs, int[] labels){
+        double heatMap[][] = new double[gridSize][gridSize];
+        double countMap[][] = new double[gridSize][gridSize];
+
+        double r = 0.5; //fixed radius for heatmap generation
+
+        for(int s=0; s< inputs.length; s++){
+            double[] input = inputs[s];
+            int label = labels[s];
+
+            //calculate activation for each node
+            for(int i=0; i<gridSize; i++){
+                for(int j=0; j<gridSize; j++){
+                    double dist = euclideanDistance(input, weights[i][j]);
+                    double activation = radialBasisFunction(dist, r);
+
+                    double signedActivation = (label==0) ? activation : -activation;
+                    heatMap[i][j] += signedActivation;
+                    countMap[i][j] += activation;
+                }
+            }
+        }
+
+        //normalize heatmap
+        for(int i=0; i<gridSize; i++){
+            for(int j=0; j<gridSize; j++){
+                if(countMap[i][j] > 0){
+                    heatMap[i][j] /= countMap[i][j];
+                }
+            }
+        }
+
+        return heatMap;
+    }
+
+    public void exportHeatMap(){
+
     }
 
     public static void main(String[] args) {
