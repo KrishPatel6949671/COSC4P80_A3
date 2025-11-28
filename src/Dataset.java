@@ -10,7 +10,6 @@ public class Dataset {
     public int[] labels;
 
     public Dataset(String path) throws IOException {
-        System.out.println("File Name: " + path);
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String[] header = br.readLine().trim().split("\\s+");
             int numSamples = Integer.parseInt(header[0]);
@@ -27,6 +26,20 @@ public class Dataset {
                 for (int j = 0; j < numBins; j++) {
                     inputs[i][j] = Double.parseDouble(line[j + 1]);
                 }
+            }
+        }
+        //normalizeVectors(inputs);
+    }
+
+    public void normalizeVectors(double[][] vectors) {
+        for (int i = 0; i < vectors.length; i++) {
+            double norm = 0.0;
+            for (double val : vectors[i]) {
+                norm += val * val;
+            }
+            norm = Math.sqrt(norm);
+            for (int j = 0; j < vectors[i].length; j++) {
+                vectors[i][j] /= norm;
             }
         }
     }
