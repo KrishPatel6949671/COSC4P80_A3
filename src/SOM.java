@@ -123,7 +123,6 @@ public class SOM {
         double[][] badMap = new double[gridSize][gridSize];
         double[][] heatMap = new double[gridSize][gridSize];
 
-        //double r = 0.5/ Math.sqrt(2*Math.log(2));
         double r = 10;
 
         for(int s=0; s< inputs.length; s++){
@@ -150,20 +149,11 @@ public class SOM {
                 maxAbsHeat = Math.max(maxAbsHeat, Math.abs(heatMap[i][j]));
             }
         }
-
         if(maxAbsHeat > 0){
             for(int i=0; i<gridSize; i++){
                 for(int j=0; j<gridSize; j++){
                     heatMap[i][j] /= maxAbsHeat;
                 }
-            }
-        }
-
-        System.out.println("Sample heatmap values:");
-        for(int i=0; i<Math.min(3, gridSize); i++){
-            for(int j=0; j<Math.min(3, gridSize); j++){
-                System.out.printf("  [%d][%d]: heat=%.4f%n",
-                        i, j, heatMap[i][j]);
             }
         }
 
